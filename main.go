@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var DbConnection *sql.DB
@@ -19,11 +19,11 @@ type Message struct {
 
 func init() {
 	var err error
-	DbConnection, err = sql.Open("sqlite3", "./database.sql")
+	DbConnection, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", "test", "secret", "127.0.0.1:3308", "app-database"))
 	if err != nil {
 		fmt.Println("open error", err)
 	}
-	_, err = DbConnection.Query("CREATE TABLE IF NOT EXISTS message(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, text TEXT NOT NULL)")
+	_, err = DbConnection.Query("CREATE TABLE IF NOT EXISTS message(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, text VARCHAR(255) NOT NULL)")
 	if err != nil {
 		fmt.Println("create table error:", err)
 	}
