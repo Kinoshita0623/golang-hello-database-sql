@@ -43,6 +43,13 @@ func findMessages() []Message {
 	return messages
 }
 
+func find(id int64) (Message, error) {
+
+	var message Message
+	error := DbConnection.QueryRow("SELECT id, text FROM message WHERE id = ? LIMIT 1", id).Scan(&message.Id, &message.Text)
+	return message, error
+}
+
 func handleGreet(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "hello")
 }
@@ -78,12 +85,37 @@ func handleMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleCreateMessage(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
 	text := r.FormValue("text")
 	if len(text) == 0 {
 		http.Error(w, http.StatusText(403), 403)
 		return
 	}
 
+	stmt, e := DbConnection.Prepare("INSERT INTO message(text) VALUES(?)")
+	if e != nil {
+		fmt.Println("エラー", e)
+	}
+
+	result, err := stmt.Exec(text)
+
+	if err != nil {
+		fmt.Println("stmtエラー", err)
+	}
+
+	insertedId, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println("insertId取得失敗")
+		return
+	}
+	created, err := find(insertedId)
+	if err != nil {
+		fmt.Println("find error", err)
+		return
+	}
+	fmt.Println("inserted", insertedId)
+	res, _ := json.Marshal(created)
+	w.Write(res)
 }
 
 func main() {
