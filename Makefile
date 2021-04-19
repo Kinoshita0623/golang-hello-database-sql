@@ -2,8 +2,8 @@ GO=go
 
 
 build: 
-	$(GO) build -o bin/main main.go
+	$(GO) build -o bin/* *.go
 
 run:
-	sudo $(GO) run main.go
+	sudo $(GO) run *.go
 
