@@ -88,7 +88,7 @@ func create(msg Message) (Message, error) {
 
 func find(id int64) (Message, error) {
 	var message Message
-	err := DbConnection.QueryRow("SELECT id, text FROM message WHERE id = ? LIMIT 1").Scan(&message.Id, &message.Text)
+	err := DbConnection.QueryRow("SELECT id, text FROM message WHERE id = ? LIMIT 1", id).Scan(&message.Id, &message.Text)
 	return message, err
 }
 
