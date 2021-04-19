@@ -13,11 +13,7 @@ import (
 
 var DbConnection *sql.DB
 var sc = bufio.NewScanner(os.Stdin)
-
-type Message struct {
-	Id   uint64 `json:"id"`
-	Text string `json:"text"`
-}
+var messageRepository MessageRepository
 
 func init() {
 	var err error
@@ -29,6 +25,7 @@ func init() {
 	if err != nil {
 		fmt.Println("create table error:", err)
 	}
+	messageRepository = CreateMessageRepository()
 
 }
 
@@ -41,13 +38,6 @@ func findMessages() []Message {
 		messages = append(messages, msg)
 	}
 	return messages
-}
-
-func find(id int64) (Message, error) {
-
-	var message Message
-	error := DbConnection.QueryRow("SELECT id, text FROM message WHERE id = ? LIMIT 1", id).Scan(&message.Id, &message.Text)
-	return message, error
 }
 
 func handleGreet(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +67,7 @@ func handleSearchMessages(w http.ResponseWriter, r *http.Request) {
 
 func handleMessages(w http.ResponseWriter, r *http.Request) {
 
-	messages := findMessages()
+	messages, _ := messageRepository.FindAll()
 	w.Header().Set("Content-Type", "application/json")
 	res, _ := json.Marshal(messages)
 	w.Write(res)
@@ -92,29 +82,15 @@ func handleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stmt, e := DbConnection.Prepare("INSERT INTO message(text) VALUES(?)")
+	msg, e := messageRepository.Add(Message{
+		Text: text,
+	})
+
 	if e != nil {
-		fmt.Println("エラー", e)
-	}
-
-	result, err := stmt.Exec(text)
-
-	if err != nil {
-		fmt.Println("stmtエラー", err)
-	}
-
-	insertedId, err := result.LastInsertId()
-	if err != nil {
-		fmt.Println("insertId取得失敗")
+		fmt.Println("find error", e)
 		return
 	}
-	created, err := find(insertedId)
-	if err != nil {
-		fmt.Println("find error", err)
-		return
-	}
-	fmt.Println("inserted", insertedId)
-	res, _ := json.Marshal(created)
+	res, _ := json.Marshal(msg)
 	w.Write(res)
 }
 
