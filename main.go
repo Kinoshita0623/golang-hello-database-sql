@@ -20,6 +20,7 @@ func init() {
 	DbConnection, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", "test", "secret", "127.0.0.1:3308", "app-database"))
 	if err != nil {
 		fmt.Println("open error", err)
+
 	}
 	_, err = DbConnection.Query("CREATE TABLE IF NOT EXISTS message(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, text VARCHAR(255) NOT NULL)")
 	if err != nil {
