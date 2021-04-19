@@ -30,17 +30,6 @@ func init() {
 
 }
 
-func findMessages() []Message {
-	result, _ := DbConnection.Query("SELECT id, text FROM message")
-	var messages []Message
-	for result.Next() {
-		var msg Message
-		result.Scan(&msg.Id, &msg.Text)
-		messages = append(messages, msg)
-	}
-	return messages
-}
-
 func handleGreet(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "hello")
 }
